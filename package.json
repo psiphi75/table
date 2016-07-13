@@ -1,0 +1,26 @@
+{
+  "name": "table",
+  "version": "0.0.1",
+  "description": "A simple table that consists of rows and columns of numeric data. Allows the programmer to run functions on the data.",
+  "main": "Table.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/psiphi75/table.git"
+  },
+  "keywords": [
+    "table",
+    "data"
+  ],
+  "author": "Simon M. Werner",
+  "license": "APSL-2.0",
+  "bugs": {
+    "url": "https://github.com/psiphi75/table/issues"
+  },
+  "homepage": "https://github.com/psiphi75/table#readme",
+  "devDependencies": {
+    "tape": "^4.6.0"
+  }
+}
