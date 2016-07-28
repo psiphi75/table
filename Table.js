@@ -52,13 +52,16 @@ function Table(headers) {
         updateRow: function (i, obj) {
             rows[i] = createRowFromObject(obj);
         },
-        sort: function(columnName) {
+        sort: function(columnName, orderFunc) {
             var h = headers.indexOf(columnName);
             if (h === -1) return;
 
-            rows.sort(function(a, b) {
-                return a[h] - b[h];
-            });
+            if (typeof orderFunc !== 'function') {
+                orderFunc = function(a, b) {
+                    return a[h] - b[h];
+                };
+            }
+            rows.sort(orderFunc);
         },
         addColumn: function (name, initVal) {
             if (typeof name !== 'string') {
@@ -68,10 +71,10 @@ function Table(headers) {
             headers.push(name);
 
             // Now need to initialise all previous rows
-            rows.forEach((row, i) => {
+            rows = rows.map((row) => {
                 var arr = Array.prototype.slice.call(row);
                 arr.push(initVal);
-                rows[i] = new Float64Array(arr);
+                return new Float64Array(arr);
             });
         },
         removeColumn: function(name) {
