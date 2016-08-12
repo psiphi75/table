@@ -264,9 +264,87 @@ function Table(headers) {
             // Clean up by deleting all unused rows
             fn.removeRows(newRowOffset);
         },
-        // function join(that) {
-        //
-        // },
+        unwrapDegrees: function(columnName) {
+            var h = headers.indexOf(columnName);
+            if (h === -1) return;
+            const THRESH = 190;
+
+            var lastVal = rows[0][h];
+            var offset = 0;
+            rows.forEach((row) => {
+                var val = row[h] + offset;
+                if (lastVal - val > THRESH) {
+                    offset += 360;
+                } else if (lastVal - val < -THRESH) {
+                    offset -= 360;
+                }
+                lastVal = row[h] + offset;
+                row[h] = lastVal;
+            });
+        },
+        wrapDegrees: function(columnName) {
+            var h = headers.indexOf(columnName);
+            if (h === -1) return;
+
+            rows.forEach((row) => {
+                var val = row[h];
+                while (val > 360) val -= 360;
+                while (val < 360) val += 360;
+                row[h] = val;
+            });
+        },
+
+        /**
+         * Find all zero values and interpoalate betwen the last non-zero values.
+         */
+        interpolateOverZeros: function pruneBeforeNote(columnName) {
+            var h = headers.indexOf(columnName);
+            if (h === -1) return;
+
+            var length = this.length;
+            var vStart = 0;
+            var vEnd = 0;
+            var vMid;
+            var vDelta;
+            findNextBlock();
+
+            while (vMid < length) {
+                if (vMid === vEnd) {
+                    if (!findNextBlock()) {
+                        return;
+                    }
+                }
+                rows[vMid][h] = rows[vStart][h] + vDelta * (vMid - vStart);
+                vMid += 1;
+            }
+
+            function findNextBlock() {
+                vStart = findNextBlockStart(vEnd);
+                vMid = vStart + 1;
+                vEnd = findNextBlockEnd(vStart + 1);
+                if (vEnd >= length - 1) {
+                    return false;
+                }
+                var vs = rows[vStart][h];
+                var ve = rows[vEnd][h];
+                vDelta = (ve - vs) / (vEnd - vStart);
+
+                return true;
+            }
+
+            function findNextBlockStart(i) {
+                while (i < length - 1 && !(rows[i][h] !== 0 && rows[i + 1][h] === 0)) {
+                    i += 1;
+                }
+                return i;
+            }
+            function findNextBlockEnd(i) {
+                while (i < length - 1 && !(rows[i - 1][h] === 0 && rows[i][h] !== 0)) {
+                    i += 1;
+                }
+                return i;
+            }
+        },
         set info(infoObj) {
             info = infoObj;
         },
@@ -291,9 +369,6 @@ function Table(headers) {
             fn.addColumn(newFieldname);
             var hJoin = headers.indexOf(joinFieldname);
             var hNew = headers.indexOf(newFieldname);
-            // var thatLen = joinField.length;
-            // console.log(joinField[0], joinField[joinField.length-1])
-            // console.log(rows[0][0], rows[rows.length-1][0])
 
             //
             // Find the first common value
@@ -305,18 +380,14 @@ function Table(headers) {
 
             thisJoinValue = rows[thisRowId][hJoin];
             findNextThatJoinValue();
-            // console.log(rows[thisRowId], hJoin, thisJoinValue, thatJoinValue)
 
             //
             // For each common value fill in the gaps
             //
-            // var x= 0;
             while (thisRowId < rows.length) {
 
-                // if (x < 20) console.log('1: ', thisRowId, thisJoinValue, thatField[thatRowId])
                 rows[thisRowId][hNew] = thatField[thatRowId];
                 thisJoinValue = rows[thisRowId][hJoin];
-                // console.log(thisRowId, rows[thisRowId][hJoin], rows[thisRowId][hNew], thatJoinValue, thatField[thatRowId], thatRowId)
                 thisRowId += 1;
 
                 if (thisJoinValue >= thatJoinValue) {
@@ -329,10 +400,6 @@ function Table(headers) {
                 do {
                     thatJoinValue = joinField[thatRowId];
                     thatRowId += 1;
-                    // console.log(thatJoinValue, thatRowId)
-
-                    // if (x++ < 20) console.log('2:                            ', thisRowId, thatJoinValue, )
-
                 } while (thatJoinValue < thisJoinValue && thatRowId + 1 < joinField.length);
             }
 
