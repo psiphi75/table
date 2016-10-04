@@ -61,6 +61,21 @@ test('Table.interpolateOverZeros()', function (t) {
     zeroGaps.forEach(function (val) {
         tbl.addRow([val]);
     });
+    const ANSWER = [0, 0, 2, 3, 3, 3, 6, 7, 8, 8, 10, 10, 12, 12];
+    tbl.smooth('one');
+    tbl.getColumn('one').forEach((value, rowId) => {
+        t.equal(value, ANSWER[rowId], 'Value correct: ' + rowId);
+    });
+    t.end();
+});
+
+test('Table.smooth()', function (t) {
+    t.plan(zeroGaps.length);
+    var headers = ['one'];
+    var tbl = new Table(headers);
+    zeroGaps.forEach(function (val) {
+        tbl.addRow([val]);
+    });
     const ANSWER = [0, 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 0];
     tbl.interpolateOverZeros('one');
     tbl.getColumn('one').forEach((value, rowId) => {

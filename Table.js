@@ -293,6 +293,20 @@ function Table(headers) {
                 row[h] = val;
             });
         },
+        smooth: function(columnName) {
+            var h = headers.indexOf(columnName);
+            if (h === -1) return;
+
+            var lastVal = rows[0][h];
+            rows.forEach((row) => {
+                var val = row[h];
+                if (val === 0) {
+                    row[h] = lastVal;
+                } else {
+                    lastVal = val;
+                }
+            });
+        },
 
         /**
          * Find all zero values and interpoalate betwen the last non-zero values.
